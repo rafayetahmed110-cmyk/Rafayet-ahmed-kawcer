@@ -1,0 +1,6 @@
+{
+  "name": "NoteFlow",
+  "description": "Professional Material Design 3 Android Notes App with offline Hive local storage, categories, search, sorting, and full Flutter project exporter.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
