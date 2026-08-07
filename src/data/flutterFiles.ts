@@ -124,7 +124,7 @@ if (flutterVersionName == null) {
 android {
     namespace "com.noteflow.app"
     compileSdk 35
-    ndkVersion flutter.ndkVersion
+    ndkVersion "25.1.8937393"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -1070,6 +1070,207 @@ class _SplashScreenState extends State<SplashScreen>
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+`
+  },
+  {
+    path: 'lib/widgets/note_card.dart',
+    description: 'Note Card Widget for grid and list view',
+    content: `import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import '../models/note.dart';
+import '../providers/note_provider.dart';
+
+class NoteCard extends ConsumerWidget {
+  final Note note;
+
+  const NoteCard({super.key, required this.note});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final noteNotifier = ref.read(noteNotifierProvider.notifier);
+    final cardColor = Color(note.colorHex);
+
+    return Card(
+      elevation: 0,
+      color: cardColor.value == 0
+          ? theme.colorScheme.surfaceContainerLow
+          : cardColor.withOpacity(0.2),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => context.push('/editor', extra: note.id),
+        child: Padding(
+          padding: const EdgeInsets.all(14.0),
+          child: Column(
+            crossAxisAlignment: CrossAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      note.title.isEmpty ? 'Untitled Note' : note.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      note.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                      size: 18,
+                      color: note.isPinned
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurfaceVariant,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => noteNotifier.togglePin(note.id),
+                  ),
+                ],
+              ),
+              if (note.description.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  note.description,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  if (note.category.isNotEmpty)
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        note.category,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  const Spacer(),
+                  Text(
+                    DateFormat('MMM d').format(note.updatedAt),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  InkWell(
+                    onTap: () => noteNotifier.toggleFavorite(note.id),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Icon(
+                        note.isFavorite
+                            ? Icons.star_rounded
+                            : Icons.star_outline_rounded,
+                        size: 18,
+                        color: note.isFavorite
+                            ? Colors.amber
+                            : theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+`
+  },
+  {
+    path: 'lib/widgets/search_bar_widget.dart',
+    description: 'Search bar widget for filtering notes',
+    content: `import 'package:flutter/material.dart';
+
+class SearchBarWidget extends StatelessWidget {
+  final ValueChanged<String> onChanged;
+
+  const SearchBarWidget({super.key, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SearchBar(
+      hintText: 'Search notes...',
+      leading: const Icon(Icons.search_rounded),
+      elevation: const WidgetStatePropertyAll(0),
+      backgroundColor:
+          WidgetStatePropertyAll(theme.colorScheme.surfaceContainerHigh),
+      onChanged: onChanged,
+    );
+  }
+}
+`
+  },
+  {
+    path: 'lib/widgets/empty_state.dart',
+    description: 'Empty state illustration when no notes found',
+    content: `import 'package:flutter/material.dart';
+
+class EmptyState extends StatelessWidget {
+  const EmptyState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.note_alt_outlined,
+              size: 80,
+              color: theme.colorScheme.primary.withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No Notes Found',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Tap the + button to create a new note or change your filters.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
         ),
       ),
     );
