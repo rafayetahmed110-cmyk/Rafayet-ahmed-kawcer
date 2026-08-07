@@ -195,6 +195,108 @@ dependencies {}
 `
   },
   {
+    path: 'android/settings.gradle',
+    description: 'Gradle plugin management and Android settings',
+    content: `pluginManagement {
+    def flutterSdkPath = {
+        def properties = new Properties()
+        def localPropertiesFile = new File(rootProject.projectDir, "local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.withReader("UTF-8") { reader -> properties.load(reader) }
+        }
+        def flutterSdkPath = properties.getProperty("flutter.sdk")
+        assert flutterSdkPath != null : "flutter.sdk not set in local.properties"
+        return flutterSdkPath
+    }()
+
+    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+    id "com.android.application" version "8.3.2" apply false
+    id "org.jetbrains.kotlin.android" version "1.9.24" apply false
+}
+
+include ":app"
+`
+  },
+  {
+    path: 'android/build.gradle',
+    description: 'Root Android build configuration',
+    content: `allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = "../build"
+subprojects {
+    project.buildDir = "\${rootProject.buildDir}/\${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(":app")
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
+`
+  },
+  {
+    path: 'android/gradle.properties',
+    description: 'Gradle JVM and AndroidX settings',
+    content: `org.gradle.jvmargs=-Xmx4096M -XX:MaxMetaspaceSize=1024m
+android.useAndroidX=true
+android.enableJetifier=true
+`
+  },
+  {
+    path: 'android/app/src/main/kotlin/com/noteflow/app/MainActivity.kt',
+    description: 'Android MainActivity entrypoint with Flutter v2 embedding',
+    content: `package com.noteflow.app
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity: FlutterActivity() {
+}
+`
+  },
+  {
+    path: 'android/app/src/main/res/values/styles.xml',
+    description: 'Android styles and themes',
+    content: `<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+    </style>
+    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">?android:attr/colorBackground</item>
+    </style>
+</resources>
+`
+  },
+  {
+    path: 'android/app/src/main/res/drawable/launch_background.xml',
+    description: 'Android splash launch background',
+    content: `<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFF" />
+        </shape>
+    </item>
+</layer-list>
+`
+  },
+  {
     path: 'lib/main.dart',
     description: 'Flutter Application Entry Point with Hive & Riverpod',
     content: `import 'package:flutter/material.dart';
